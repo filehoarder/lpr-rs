@@ -6,6 +6,6 @@ description = "simple LPR client using the classic Line Printer Daemon Protocol"
 license = "AGPL-3.0"
 
 [dependencies]
-hostname = "*"
-username = "*"
-clap = "*"
+hostname = "0.1.5"
+username = "0.2.0"
+clap = "2.32.0"
