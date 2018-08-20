@@ -2,6 +2,8 @@
 name = "lpr"
 version = "0.1.0"
 authors = ["Gerrit Pape <papeg@crowler.org>"]
+description = "simple LPR client using the classic Line Printer Daemon Protocol"
+license = "AGPL-3.0"
 
 [dependencies]
 hostname = "*"
