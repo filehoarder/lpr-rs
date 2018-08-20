@@ -1,0 +1,9 @@
+[package]
+name = "lpr"
+version = "0.1.0"
+authors = ["Gerrit Pape <papeg@crowler.org>"]
+
+[dependencies]
+hostname = "*"
+username = "*"
+clap = "*"
