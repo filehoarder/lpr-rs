@@ -1,6 +1,9 @@
 extern crate hostname;
 extern crate username;
+
 use hostname::get_hostname;
+use username::get_user_name;
+
 use std::{
 	fs::File,
 	io::{
@@ -12,12 +15,12 @@ use std::{
 	net::TcpStream,
 	process,
 };
-use username::get_user_name;
 
 pub struct LprConnection {
 	stream: TcpStream,
 	verbose: bool,
 }
+
 impl LprConnection {
 	pub fn new(ip_str: &str, verbose: bool) -> LprConnection {
 		let target = format!("{}:515", ip_str);
@@ -94,7 +97,7 @@ impl LprConnection {
 		self.print(&buf);
 	}
 
-	fn print(&mut self, data: &[u8]) {
+	pub fn print(&mut self, data: &[u8]) {
 		let (controlfile, job_name) = self.generate_control_file_and_name();
 		if self.verbose {
 			println!("generated controlfile:\n{}", controlfile)
