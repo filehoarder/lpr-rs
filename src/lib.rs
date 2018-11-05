@@ -20,17 +20,20 @@ pub struct LprConnection {
 impl LprConnection {
     pub fn new(ip_str: &str, verbose: bool) -> LprConnection {
         let target = format!("{}:515", ip_str);
-        let stream = TcpStream::connect(&target).expect(&format!("connecting to {}", target));
-        stream.set_read_timeout(Some(Duration::from_secs(2)));
+        let stream = TcpStream::connect(&target)
+            .unwrap_or_else(|err| panic!("connecting to {}: {}", target, err));
+        stream
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .expect("setting read timeout");
         LprConnection { stream, verbose }
     }
 
     pub fn status(mut self) -> Result<String, Error> {
-        let bytes_written = self.stream.write(&[4, '\n' as u8])?;
+        let bytes_written = self.stream.write(&[4, b'\n'])?;
         match bytes_written {
             2 => {
                 let mut buf = [0; 128];
-                self.stream.read(&mut buf)?;
+                self.stream.read_exact(&mut buf)?;
                 let buf_str = String::from_utf8_lossy(&buf).to_string();
                 let split: Vec<&str> = buf_str.split("\n\n").collect();
                 Ok(split[0].to_string())
@@ -47,12 +50,12 @@ impl LprConnection {
             print!("Sending {}.. ", description);
         }
         self.stream
-            .write(data)
-            .expect(&format!("writing {} to stream", description));
+            .write_all(data)
+            .unwrap_or_else(|err| panic!("writing {} to stream: {}", description, err));
 
         let mut buf = [0; 1];
         self.stream
-            .read(&mut buf)
+            .read_exact(&mut buf)
             .expect("reading acknowledge from stream");
         if self.verbose {
             println!("acknowledged");
@@ -122,7 +125,7 @@ impl LprConnection {
             "receive datafile subcommand",
         );
 
-        self.stream.write(data).expect("writing file content");
+        self.stream.write_all(data).expect("writing file content");
         self.send_and_wait_for_ack(&[0], "data file and ack");
     }
 }
