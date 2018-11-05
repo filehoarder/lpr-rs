@@ -9,6 +9,7 @@ use std::{
     io::{Error, ErrorKind, Read, Write},
     net::TcpStream,
     process,
+    time::Duration,
 };
 
 pub struct LprConnection {
@@ -19,10 +20,9 @@ pub struct LprConnection {
 impl LprConnection {
     pub fn new(ip_str: &str, verbose: bool) -> LprConnection {
         let target = format!("{}:515", ip_str);
-        LprConnection {
-            stream: TcpStream::connect(&target).expect(&format!("connecting to {}", target)),
-            verbose: verbose,
-        }
+        let stream = TcpStream::connect(&target).expect(&format!("connecting to {}", target));
+        stream.set_read_timeout(Some(Duration::from_secs(2)));
+        LprConnection { stream, verbose }
     }
 
     pub fn status(mut self) -> Result<String, Error> {
