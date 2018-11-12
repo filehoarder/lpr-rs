@@ -31,6 +31,6 @@ fn main() {
         );
     } else if matches.is_present("file") {
         let file = matches.value_of("file").unwrap();
-        conn.print_file(file);
+        conn.print_file(file).expect("printing file");
     }
 }
