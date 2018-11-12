@@ -10,7 +10,6 @@ fn main() {
         (version: "0.1.4")
         (author: "Gerrit Pape <papeg@crowler.org>")
         (about: "simple LPR client using the classic Line Printer Daemon Protocol - TCP only")
-        (@arg status: -s --status "Prints the status of the queue")
         (@arg verbose: -v -vv --verbose "go verbose")
         (@arg printer: +required "IP-Address of printer to target")
         (@arg file: "path to file to print")
@@ -23,7 +22,9 @@ fn main() {
 
     conn.verbose(matches.is_present("verbose"));
 
-    if matches.is_present("status") {
+    if let Some(file) = matches.value_of("file") {
+        conn.print_file(file).expect("printing file");
+    } else {
         println!(
             "{}",
             match conn.status() {
@@ -31,8 +32,5 @@ fn main() {
                 Err(e) => e.to_string(),
             }
         );
-    } else if matches.is_present("file") {
-        let file = matches.value_of("file").unwrap();
-        conn.print_file(file).expect("printing file");
     }
 }
