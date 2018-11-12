@@ -19,7 +19,7 @@ pub struct LprConnection {
 
 impl LprConnection {
     pub fn new(ip_str: &str, timeout_ms: u64) -> LprConnection {
-        let stream = TcpStream::connect(format!("{}:515:", ip_str)).expect("connecting to lpd");
+        let stream = TcpStream::connect(format!("{}:515", ip_str)).expect("connecting to lpd");
         stream
             .set_read_timeout(Some(Duration::from_millis(timeout_ms)))
             .expect("setting read timeout");
@@ -37,8 +37,8 @@ impl LprConnection {
         let bytes_written = self.stream.write(&[4, b'\n'])?;
         match bytes_written {
             2 => {
-                let mut buf = [0; 128];
-                self.stream.read_exact(&mut buf)?;
+                let mut buf: Vec<u8> = Vec::new();
+                self.stream.read_to_end(&mut buf)?;
                 let buf_str = String::from_utf8_lossy(&buf).to_string();
                 let split: Vec<&str> = buf_str.split("\n\n").collect();
                 Ok(split[0].to_string())
