@@ -7,13 +7,13 @@ use lpr::LprConnection;
 
 fn main() {
     let matches = clap_app!(lpr =>
-        (version: "0.1.0")
+        (version: "0.1.4")
         (author: "Gerrit Pape <papeg@crowler.org>")
-        (about: "simple LPR client using the classic Line Printer Daemon Protocol")
+        (about: "simple LPR client using the classic Line Printer Daemon Protocol - TCP only")
         (@arg status: -s --status "Prints the status of the queue")
-        (@arg verbose: -v -vv --verbose "Go verbose")
-        (@arg printer: +required "Address of Printer to target")
-        (@arg file: "File to print")
+        (@arg verbose: -v -vv --verbose "go verbose")
+        (@arg printer: +required "IP-Address of printer to target")
+        (@arg file: "path to file to print")
     )
     .get_matches();
 
