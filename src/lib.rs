@@ -18,14 +18,19 @@ pub struct LprConnection {
 }
 
 impl LprConnection {
-    pub fn new(ip_str: &str, verbose: bool) -> LprConnection {
-        let target = format!("{}:515", ip_str);
-        let stream = TcpStream::connect(&target)
-            .unwrap_or_else(|err| panic!("connecting to {}: {}", target, err));
+    pub fn new(ip_str: &str, timeout_ms: u64) -> LprConnection {
+        let stream = TcpStream::connect(format!("{}:515:", ip_str)).expect("connecting to lpd");
         stream
-            .set_read_timeout(Some(Duration::from_secs(2)))
+            .set_read_timeout(Some(Duration::from_millis(timeout_ms)))
             .expect("setting read timeout");
-        LprConnection { stream, verbose }
+        LprConnection {
+            stream,
+            verbose: false,
+        }
+    }
+
+    pub fn verbose(&mut self, verbose: bool) {
+        self.verbose = verbose;
     }
 
     pub fn status(mut self) -> io::Result<String> {

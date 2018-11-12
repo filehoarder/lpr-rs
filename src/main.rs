@@ -19,7 +19,9 @@ fn main() {
 
     let printer = matches.value_of("printer").unwrap_or("127.0.0.1");
 
-    let mut conn = LprConnection::new(printer, matches.is_present("verbose"));
+    let mut conn = LprConnection::new(printer, 4200);
+
+    conn.verbose(matches.is_present("verbose"));
 
     if matches.is_present("status") {
         println!(
