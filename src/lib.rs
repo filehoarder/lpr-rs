@@ -12,21 +12,36 @@ use std::{
     time::Duration,
 };
 
+#[derive(Debug)]
 pub struct LprConnection {
     stream: TcpStream,
     verbose: bool,
 }
 
+#[derive(Debug)]
+pub enum LprError
+{
+    IoError(io::Error),
+    AckError,
+}
+
+impl From<io::Error> for LprError
+{
+    fn from(err: io::Error) -> LprError
+    {
+        LprError::IoError(err)
+    }
+}
+
 impl LprConnection {
-    pub fn new(ip_str: &str, timeout_ms: u64) -> LprConnection {
-        let stream = TcpStream::connect(format!("{}:515", ip_str)).expect("connecting to lpd");
+    pub fn new(ip_str: &str, timeout_ms: u64) -> Result<LprConnection, LprError> {
+        let stream = TcpStream::connect(format!("{}:515", ip_str))?;
         stream
-            .set_read_timeout(Some(Duration::from_millis(timeout_ms)))
-            .expect("setting read timeout");
-        LprConnection {
+            .set_read_timeout(Some(Duration::from_millis(timeout_ms)))?;
+        Ok(LprConnection {
             stream,
             verbose: false,
-        }
+        })
     }
 
     pub fn verbose(&mut self, verbose: bool) {
@@ -50,7 +65,7 @@ impl LprConnection {
         }
     }
 
-    fn send_and_wait_for_ack(&mut self, data: &[u8], description: &str) -> io::Result<()> {
+    fn send_and_wait_for_ack(&mut self, data: &[u8], description: &str) -> Result<(), LprError> {
         if self.verbose {
             print!("Sending {}.. ", description);
         }
@@ -62,7 +77,7 @@ impl LprConnection {
             println!("acknowledged");
         }
         if buf[0] != 0 {
-            panic!("received invalid acknowledge: {:x}", buf[0]);
+            return Err(LprError::AckError);
         }
         Ok(())
     }
@@ -80,7 +95,7 @@ impl LprConnection {
         (format!("H{}\nP{}\nld{}\n", host, user, name), name)
     }
 
-    pub fn print_file(&mut self, path_to_file: &str) -> io::Result<()> {
+    pub fn print_file(&mut self, path_to_file: &str) -> Result<(), LprError> {
         if self.verbose {
             print!("Priting {}.. ", &path_to_file)
         }
@@ -98,7 +113,7 @@ impl LprConnection {
         &mut self,
         path_to_file: &str,
         mut header_data: Vec<u8>,
-    ) -> io::Result<()> {
+    ) -> Result<(), LprError> {
         let mut buf: Vec<u8> = Vec::with_capacity(8096);
         let mut file = File::open(path_to_file)?;
         let mut file_buf: Vec<u8> = Vec::with_capacity(8096);
@@ -110,7 +125,7 @@ impl LprConnection {
         Ok(())
     }
 
-    pub fn print(&mut self, data: &[u8]) -> io::Result<()> {
+    pub fn print(&mut self, data: &[u8]) -> Result<(), LprError> {
         let (controlfile, job_name) = self.generate_control_file_and_name();
         if self.verbose {
             println!("generated controlfile:\n{}", controlfile)
@@ -130,6 +145,7 @@ impl LprConnection {
         )?;
 
         self.stream.write_all(data)?;
+
         self.send_and_wait_for_ack(&[0], "data file and ack")?;
         Ok(())
     }
