@@ -1,6 +1,6 @@
 [package]
 name = "lpr"
-version = "0.1.3"
+version = "0.1.5"
 authors = ["Gerrit Pape <papeg@crowler.org>"]
 description = "simple LPR client using the classic Line Printer Daemon Protocol - TCP only"
 license = "AGPL-3.0"
